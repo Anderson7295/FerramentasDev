@@ -18,7 +18,7 @@
   <form id="form" class="painel" autocomplete="off">
     <div class="linha">
       <label>Número do Jira
-        <input type="text" id="jira" placeholder="Ex: DDFINAN-37406" required>
+        <input type="text" id="jira" placeholder="Ex: DDESTOQUE-37406" required>
       </label>
       <label>Tipo de tarefa/fluxo
         <select id="tipo">
@@ -30,27 +30,38 @@
     </div>
 
     <div class="caixa">
-      <div class="linha">
-        <label>Escopo do repositório
-          <select id="escopo">
-            <option value="rotina">Rotina (depende da rotina)</option>
-            <option value="db">DB (repositório ADMDB-pkg)</option>
-          </select>
-        </label>
-        <label class="switch">
-          <input type="checkbox" id="manual">
-          <span>Ajustar versões manualmente (fora de época / exceção)</span>
-        </label>
-      </div>
-      <p class="info" id="infoVersoes"></p>
+      <label>Escopo do repositório
+        <select id="escopo">
+          <option value="rotina">Rotina (depende da rotina)</option>
+          <option value="db">DB (repositório ADMDB-pkg)</option>
+        </select>
+      </label>
 
-      <div id="boxManual" class="versoes" hidden>
-        <small>Informe os códigos numéricos de versão (ex: 370 para 37.0). Deixe a Release vazia se não houver.</small>
+      <div class="versoes">
+        <div class="ver-topo">
+          <strong>Versões correntes</strong>
+          <small>Códigos numéricos (ex: 370 para 37.0). Deixe a Release vazia se não houver.</small>
+        </div>
         <div class="linha4">
           <label>Suporte <input type="number" id="verSup"></label>
           <label>Master / Main <input type="number" id="verMas"></label>
           <label>Release (opcional) <input type="number" id="verRel"></label>
           <label>Develop <input type="number" id="verDev"></label>
+        </div>
+        <p class="info" id="infoVersoes"></p>
+        <div class="acoes">
+          <button type="button" class="btn peq" id="salvarVersoes">Salvar versões</button>
+          <button type="button" class="btn peq" id="usarCalendario">Usar calendário do mês</button>
+        </div>
+      </div>
+
+      <div class="arquivo">
+        <p class="status" id="statusArquivo"></p>
+        <div class="acoes">
+          <button type="button" class="btn peq" id="btnArqCriar" hidden title="Cria um arquivo .json no computador onde as versões serão salvas">Criar arquivo de configuração</button>
+          <button type="button" class="btn peq" id="btnArqAbrir" hidden title="Usa um arquivo .json que já existe">Usar arquivo existente</button>
+          <button type="button" class="btn peq pri" id="btnArqReconectar" hidden>Reconectar arquivo</button>
+          <button type="button" class="btn peq link" id="btnArqDesvincular" hidden>Desvincular arquivo</button>
         </div>
       </div>
     </div>
