@@ -5,12 +5,74 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Gerador de branches - Ferramentas Dev</title>
 <link rel="stylesheet" href="../menu.css">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header>
   <a href="../" class="voltar">&larr; Ferramentas Dev</a>
-  <h1>Gerador de branches</h1>
-  <p class="sub">Esta ferramenta está em construção.</p>
+  <h1>Gerador de branches - Winthor</h1>
+  <p class="sub">Gera os nomes das branches com base no calendário de versões e nas regras do ERP.</p>
 </header>
+
+<main>
+  <form id="form" class="painel" autocomplete="off">
+    <div class="linha">
+      <label>Número do Jira
+        <input type="text" id="jira" placeholder="Ex: DDFINAN-37406" required>
+      </label>
+      <label>Tipo de tarefa/fluxo
+        <select id="tipo">
+          <option value="feature">História / Feature (nova implementação)</option>
+          <option value="bugfix">Manutenção / Bugfix (correção)</option>
+          <option value="hotfix">Bug / Hotfix (execução na própria tarefa)</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="caixa">
+      <div class="linha">
+        <label>Escopo do repositório
+          <select id="escopo">
+            <option value="rotina">Rotina (depende da rotina)</option>
+            <option value="db">DB (repositório ADMDB-pkg)</option>
+          </select>
+        </label>
+        <label class="switch">
+          <input type="checkbox" id="manual">
+          <span>Ajustar versões manualmente (fora de época / exceção)</span>
+        </label>
+      </div>
+      <p class="info" id="infoVersoes"></p>
+
+      <div id="boxManual" class="versoes" hidden>
+        <small>Informe os códigos numéricos de versão (ex: 370 para 37.0). Deixe a Release vazia se não houver.</small>
+        <div class="linha4">
+          <label>Suporte <input type="number" id="verSup"></label>
+          <label>Master / Main <input type="number" id="verMas"></label>
+          <label>Release (opcional) <input type="number" id="verRel"></label>
+          <label>Develop <input type="number" id="verDev"></label>
+        </div>
+      </div>
+    </div>
+
+    <p class="erro" id="erro" hidden></p>
+
+    <div class="acoes">
+      <button type="submit" class="btn pri">Gerar branches</button>
+      <button type="button" class="btn" id="limpar">Limpar</button>
+    </div>
+  </form>
+
+  <section id="resultado" class="painel" hidden>
+    <div class="res-topo">
+      <h2>Branches geradas</h2>
+      <button type="button" class="btn peq" id="copiarTodas">Copiar todas</button>
+    </div>
+    <div id="lista"></div>
+  </section>
+</main>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script src="app.js"></script>
 </body>
 </html>

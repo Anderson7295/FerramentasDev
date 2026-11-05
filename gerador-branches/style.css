@@ -1,0 +1,30 @@
+.painel{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:20px;margin-top:24px}
+.linha{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:end}
+.linha4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:8px}
+label{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:.9rem}
+input[type=text],input[type=number],select{font:inherit;font-weight:400;padding:8px 10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--txt);width:100%}
+input:focus,select:focus{outline:2px solid var(--pri);outline-offset:-1px}
+.caixa{margin-top:16px;padding:16px;border:1px solid var(--bd);border-radius:10px;background:var(--bg)}
+.caixa input,.caixa select{background:var(--card)}
+.switch{flex-direction:row;align-items:center;gap:8px;font-weight:600;cursor:pointer;padding-bottom:8px}
+.switch input{width:18px;height:18px;accent-color:var(--pri)}
+.info{margin:12px 0 0;color:var(--muted);font-size:.85rem}
+.versoes{margin-top:12px;padding-top:12px;border-top:1px solid var(--bd)}
+.versoes small{color:var(--muted)}
+.versoes label{font-size:.82rem}
+.erro{margin:12px 0 0;color:#c0392b;font-weight:600}
+.acoes{display:flex;gap:8px;margin-top:20px}
+.btn{font:inherit;font-weight:600;padding:8px 16px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--txt);cursor:pointer}
+.btn:hover{border-color:var(--pri)}
+.btn.pri{background:var(--pri);border-color:var(--pri);color:#fff}
+.btn.peq{padding:4px 10px;font-size:.82rem}
+.res-topo{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
+.res-topo h2{margin:0;font-size:1.1rem}
+.item{margin-bottom:12px}
+.alvo{display:inline-block;font-size:.75rem;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--pri-soft);color:var(--pri);margin-bottom:4px}
+.branch{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#212529;color:#20c997;font-family:Consolas,"Courier New",monospace;font-weight:600;border-radius:8px;padding:10px 14px;word-break:break-all}
+.branch button{flex:none;font:inherit;font-family:"Segoe UI",system-ui,sans-serif;font-size:.8rem;color:#adb5bd;background:transparent;border:1px solid #495057;border-radius:6px;padding:3px 10px;cursor:pointer}
+.branch button:hover{color:#fff;border-color:#adb5bd}
+.toast{position:fixed;right:16px;bottom:16px;background:#212529;color:#fff;padding:10px 16px;border-radius:8px;font-size:.9rem;opacity:0;transform:translateY(8px);transition:opacity .2s,transform .2s;pointer-events:none}
+.toast.on{opacity:1;transform:none}
+@media (max-width:640px){.linha{grid-template-columns:1fr}.linha4{grid-template-columns:1fr 1fr}}
