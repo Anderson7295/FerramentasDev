@@ -16,6 +16,13 @@
 <main>
   <section class="card">
     <h2>Clientes salvos</h2>
+    <div class="status" id="statusArquivo"></div>
+    <div class="row arquivo">
+      <button id="btnArqCriar" class="sec" hidden title="Cria um arquivo .json no computador onde a lista será salva">Criar arquivo da lista</button>
+      <button id="btnArqAbrir" class="sec" hidden title="Usa um arquivo .json que já existe (ex.: de outro navegador ou backup)">Usar arquivo existente</button>
+      <button id="btnArqReconectar" hidden>Reconectar arquivo</button>
+      <button id="btnArqDesvincular" class="link" hidden>Desvincular arquivo</button>
+    </div>
     <div class="row">
       <select id="listaClientes"><option value="">— Selecione um cliente —</option></select>
       <button id="btnCarregar" class="sec" disabled>Carregar</button>
