@@ -28,3 +28,14 @@ input:focus,select:focus{outline:2px solid var(--pri);outline-offset:-1px}
 .toast{position:fixed;right:16px;bottom:16px;background:#212529;color:#fff;padding:10px 16px;border-radius:8px;font-size:.9rem;opacity:0;transform:translateY(8px);transition:opacity .2s,transform .2s;pointer-events:none}
 .toast.on{opacity:1;transform:none}
 @media (max-width:640px){.linha{grid-template-columns:1fr}.linha4{grid-template-columns:1fr 1fr}}
+.caixa>label{max-width:50%}
+.ver-topo{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline}
+.versoes .acoes,.arquivo .acoes{margin-top:10px}
+.arquivo{margin-top:16px;padding-top:12px;border-top:1px solid var(--bd)}
+.status{margin:0;font-size:.85rem;padding:8px 12px;border-radius:8px}
+.status.ok{background:rgba(32,201,151,.12);color:#13795b}
+.status.pend{background:var(--warn-soft,rgba(178,106,0,.1));color:var(--warn,#b26a00)}
+.btn.link{border-color:transparent;background:transparent;color:var(--pri)}
+@media (prefers-color-scheme:dark){.status.ok{color:#3dd6a3}}
+@media (max-width:640px){.caixa>label{max-width:none}}
+.linha>label,.linha4>label{min-width:0}input,select{min-width:0}
