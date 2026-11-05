@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gerador AppController - Ferramentas Dev</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <a href="../" class="voltar">&larr; Ferramentas Dev</a>
+  <h1>Gerador de comando AppController</h1>
+  <p class="sub">Preencha os dados de conexão, gere o comando e copie ou execute.</p>
+</header>
+
+<main>
+  <section class="card">
+    <h2>Clientes salvos</h2>
+    <div class="row">
+      <select id="listaClientes"><option value="">— Selecione um cliente —</option></select>
+      <button id="btnCarregar" class="sec" disabled>Carregar</button>
+      <button id="btnExcluir" class="danger" disabled>Excluir</button>
+    </div>
+    <div class="row small">
+      <button id="btnExportar" class="link">Exportar lista (.json)</button>
+      <label class="link">Importar lista (.json)<input type="file" id="arqImportar" accept=".json,application/json" hidden></label>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Dados de conexão</h2>
+    <form id="form" autocomplete="off" onsubmit="return false">
+      <label>Nome do cliente <span class="hint">(usado só para salvar)</span>
+        <input id="nome" type="text" placeholder="Ex.: Armazém Jenipapo">
+      </label>
+      <label>Diretório AppController.exe <span class="req">*</span>
+        <input id="exe" type="text" placeholder="C:\Users\seu.usuario\AppData\Local\GraphOn\AppController\AppController.exe">
+      </label>
+      <label>Host (endereço) <span class="req">*</span>
+        <input id="host" type="text" placeholder="cliente123456.winthor.cloudtotvs.com.br:491">
+      </label>
+      <label>Usuário <span class="req">*</span>
+        <input id="usuario" type="text" placeholder="mf.manager">
+      </label>
+      <label>Senha <span class="req">*</span>
+        <div class="pass">
+          <input id="senha" type="password" placeholder="Senha">
+          <button type="button" id="btnVerSenha" class="sec">Mostrar</button>
+        </div>
+      </label>
+      <div class="row actions">
+        <button id="btnSalvar" class="sec">Salvar cliente</button>
+        <button id="btnLimpar" class="sec">Limpar</button>
+        <button id="btnGerar" disabled>Gerar comando</button>
+      </div>
+      <p id="faltando" class="hint"></p>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>1. Comando manual</h2>
+    <ol class="passos">
+      <li>Clique em <b>Copiar comando</b>.</li>
+      <li>Abra o <b>Executar</b> do Windows com as teclas <kbd>Win</kbd> + <kbd>R</kbd>.</li>
+      <li>Cole o comando com <kbd>Ctrl</kbd> + <kbd>V</kbd> e pressione <kbd>Enter</kbd>.</li>
+    </ol>
+    <p class="hint">Não precisa instalar nada. Outra opção é usar <b>Baixar .bat</b> e dar duplo clique no arquivo.</p>
+    <pre id="comando" class="cmd vazio">Preencha todos os campos obrigatórios e clique em "Gerar comando".</pre>
+    <div class="row actions">
+      <button id="btnCopiar" class="sec" disabled>Copiar comando</button>
+      <button id="btnBat" class="sec" disabled title="Baixa um .bat que executa o comando com duplo clique">Baixar .bat</button>
+    </div>
+  </section>
+
+  <section class="card" id="secDireto">
+    <h2>2. Executar direto pelo navegador</h2>
+    <div class="status" id="statusDireto"></div>
+    <div class="row actions">
+      <button id="btnExecutar" disabled>Executar (CMD)</button>
+    </div>
+
+    <details id="instrucoes">
+      <summary>Como configurar este computador (uma única vez)</summary>
+      <ol class="passos">
+        <li>Baixe o pacote do launcher: <a href="launcher/AppControllerLauncher.zip" download><b>AppControllerLauncher.zip</b></a>.</li>
+        <li>Extraia o zip em qualquer pasta (ex.: Downloads). Os arquivos <code>instalar-launcher.cmd</code> e <code>appcontroller-launcher.ps1</code> precisam ficar juntos.</li>
+        <li>Dê duplo clique em <code>instalar-launcher.cmd</code>. Se o Windows mostrar "O Windows protegeu o computador", clique em <b>Mais informações</b> e depois em <b>Executar assim mesmo</b>. Não precisa ser administrador.</li>
+        <li>Quando aparecer "Launcher instalado", pressione uma tecla para fechar.</li>
+        <li>Volte aqui e clique em <b>Já instalei</b>. Depois, preencha os dados e clique em <b>Executar (CMD)</b>.</li>
+        <li>Na primeira execução, o navegador pergunta se pode abrir o <i>AppController Launcher</i>. Marque <b>Sempre permitir</b> e clique em <b>Abrir</b>.</li>
+      </ol>
+      <div class="row actions">
+        <button id="btnJaInstalei" class="sec">Já instalei</button>
+      </div>
+      <p class="hint">Para remover, execute <code>desinstalar-launcher.cmd</code>, que vem no mesmo zip.
+        Por segurança, o launcher só abre um arquivo chamado <code>AppController.exe</code> que exista no disco.</p>
+    </details>
+  </section>
+</main>
+
+<div id="toast" role="status"></div>
+<script src="app.js"></script>
+</body>
+</html>

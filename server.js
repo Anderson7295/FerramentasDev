@@ -37,6 +37,10 @@ http.createServer((req, res) => {
   }
 
   fs.stat(filePath, (err, stat) => {
+    if (!err && stat.isDirectory()) {
+      res.writeHead(301, { Location: urlPath + '/' });
+      return res.end();
+    }
     if (err || !stat.isFile()) {
       res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
       return res.end('Not found');
