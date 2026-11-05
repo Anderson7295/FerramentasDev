@@ -11,58 +11,52 @@
 <header>
   <a href="../" class="voltar">&larr; Ferramentas Dev</a>
   <h1>Gerador de branches - Winthor</h1>
-  <p class="sub">Gera os nomes das branches com base no calendário de versões e nas regras do ERP.</p>
+  <p class="sub">Gera os nomes das branches e, se quiser, já faz o clone e o checkout de cada versão no seu computador.</p>
 </header>
 
 <main>
-  <form id="form" class="painel" autocomplete="off">
+  <!-- 1. Branches -->
+  <form id="form" class="painel" autocomplete="off" novalidate>
+    <h2 class="titulo">1. Branches</h2>
     <div class="linha">
-      <label>Número do Jira
-        <input type="text" id="jira" placeholder="Ex: DDESTOQUE-37406" required>
+      <label>Tipo de rotina
+        <select id="tipoRotina">
+          <option value="delphi">Rotinas Delphi / DLIB</option>
+          <option value="admdb">ADMDB-plsql</option>
+          <option value="java">Serviços Java</option>
+          <option value="apps">Apps</option>
+        </select>
       </label>
       <label>Tipo de tarefa/fluxo
-        <select id="tipo">
+        <select id="tarefa">
           <option value="feature">História / Feature (nova implementação)</option>
           <option value="bugfix">Manutenção / Bugfix (correção)</option>
           <option value="hotfix">Bug / Hotfix (execução na própria tarefa)</option>
         </select>
       </label>
     </div>
+    <div class="linha">
+      <label>Número do Jira
+        <input type="text" id="jira" placeholder="Ex: DDESTOQUE-37406">
+      </label>
+      <label>Descrição do desenvolvimento
+        <input type="text" id="descricao" placeholder="Ex: Seleção de fornecedor">
+        <small class="dica" id="previaDesc">Acentos e símbolos são removidos e os espaços viram "_".</small>
+      </label>
+    </div>
 
     <div class="caixa">
-      <label>Escopo do repositório
-        <select id="escopo">
-          <option value="rotina">Rotina (depende da rotina)</option>
-          <option value="db">DB (repositório ADMDB-pkg)</option>
-        </select>
-      </label>
-
-      <div class="versoes">
-        <div class="ver-topo">
-          <strong>Versões correntes</strong>
-          <small>Códigos numéricos (ex: 370 para 37.0). Deixe a Release vazia se não houver.</small>
-        </div>
-        <div class="linha4">
-          <label>Suporte <input type="number" id="verSup"></label>
-          <label>Master / Main <input type="number" id="verMas"></label>
-          <label>Release (opcional) <input type="number" id="verRel"></label>
-          <label>Develop <input type="number" id="verDev"></label>
-        </div>
-        <p class="info" id="infoVersoes"></p>
-        <div class="acoes">
-          <button type="button" class="btn peq" id="salvarVersoes">Salvar versões</button>
-          <button type="button" class="btn peq" id="usarCalendario">Usar calendário do mês</button>
-        </div>
-      </div>
-
-      <div class="arquivo">
-        <p class="status" id="statusArquivo"></p>
-        <div class="acoes">
-          <button type="button" class="btn peq" id="btnArqCriar" hidden title="Cria um arquivo .json no computador onde as versões serão salvas">Criar arquivo de configuração</button>
-          <button type="button" class="btn peq" id="btnArqAbrir" hidden title="Usa um arquivo .json que já existe">Usar arquivo existente</button>
-          <button type="button" class="btn peq pri" id="btnArqReconectar" hidden>Reconectar arquivo</button>
-          <button type="button" class="btn peq link" id="btnArqDesvincular" hidden>Desvincular arquivo</button>
-        </div>
+      <strong>Versões</strong>
+      <div class="checks" id="checksVersoes"></div>
+      <div class="linha4" id="camposVersao">
+        <label id="boxSup">Versão do support
+          <input type="text" id="verSup" inputmode="decimal" placeholder="37.0">
+          <small class="dica">Base: support/<span id="baseSup">37.0</span></small>
+        </label>
+        <label id="boxRel">Versão da release
+          <input type="text" id="verRel" inputmode="decimal" placeholder="39.0">
+          <small class="dica" id="dicaRel">Base: release/<span id="baseRel">39.0</span></small>
+        </label>
       </div>
     </div>
 
@@ -76,10 +70,83 @@
 
   <section id="resultado" class="painel" hidden>
     <div class="res-topo">
-      <h2>Branches geradas</h2>
+      <h2 class="titulo">Branches geradas</h2>
       <button type="button" class="btn peq" id="copiarTodas">Copiar todas</button>
     </div>
     <div id="lista"></div>
+  </section>
+
+  <!-- 2. Clone + Checkout -->
+  <section class="painel" id="secClone">
+    <h2 class="titulo">2. Clone + Checkout <span class="opc">opcional</span></h2>
+    <p class="status" id="statusAgente">Procurando o agente local…</p>
+    <div class="acoes" id="acoesAgente">
+      <button type="button" class="btn peq pri" id="btnAutorizar" hidden>Autorizar este site no agente</button>
+      <button type="button" class="btn peq" id="btnIniciarAgente" hidden>Iniciar agente</button>
+      <button type="button" class="btn peq" id="btnVerificarAgente">Verificar de novo</button>
+    </div>
+    <details id="instrucoesAgente">
+      <summary>Como instalar o agente (uma vez por computador)</summary>
+      <ol>
+        <li>Baixe o <a href="agente/AgenteFerramentasDev.zip" download>AgenteFerramentasDev.zip</a> e extraia em qualquer pasta.</li>
+        <li>Dê duplo clique em <code>instalar-agente.cmd</code> (não precisa de administrador). Ele fica rodando em segundo plano e inicia junto com o Windows.</li>
+        <li>Volte aqui e clique em <b>Verificar de novo</b>. Na primeira vez, clique em <b>Autorizar este site no agente</b> e confirme a janela que o agente abrir. Se o navegador perguntar sobre acesso à rede local, permita.</li>
+      </ol>
+      <p class="dica">O agente só aceita pedidos de sites que você autorizou, só escuta em <code>localhost</code> e só executa <code>git</code> e <code>pman</code>. Ele usa o login do Azure DevOps já salvo no git do seu computador. Para remover, rode <code>desinstalar-agente.cmd</code>.</p>
+    </details>
+
+    <div class="linha">
+      <label>Link do clone da rotina
+        <input type="text" id="link" placeholder="https://totvstfs.visualstudio.com/Linha-Winthor/_git/AE11-PCSIS1106">
+        <small class="dica" id="dicaLink">O botão Clone + Checkout fica ativo quando o link estiver preenchido.</small>
+      </label>
+      <label>Salvar em:
+        <input type="text" id="pasta">
+        <small class="dica" id="dicaPasta"></small>
+      </label>
+    </div>
+    <div class="checks">
+      <label class="chk"><input type="checkbox" id="push"> Enviar as branches para o Azure (git push)</label>
+      <label class="chk" id="boxPman"><input type="checkbox" id="pman" checked> Rodar <code>pman install -f</code> ao fim do checkout</label>
+    </div>
+    <p class="dica" id="previaPasta"></p>
+
+    <div class="acoes">
+      <button type="button" class="btn pri" id="btnClonar" disabled>Clone + Checkout</button>
+    </div>
+    <div id="listaClone"></div>
+  </section>
+
+  <!-- 3. Limpeza -->
+  <section class="painel" id="secLimpeza">
+    <h2 class="titulo">3. Limpeza de pastas</h2>
+    <p class="dica">Lista os clones dentro das pastas de demanda (ex.: DDESTOQUE-21617) do "Salvar em:" do tipo de rotina selecionado e mostra quais têm alterações ou commits que ainda não foram enviados.</p>
+    <div class="acoes">
+      <button type="button" class="btn" id="btnListarLimpeza" disabled>Listar pastas</button>
+    </div>
+    <div id="boxLimpeza" hidden>
+      <div class="limp-topo">
+        <label class="chk"><input type="checkbox" id="marcarTudo"> Marcar tudo</label>
+        <span class="legenda"><span class="flag ok">Sem pendências</span> <span class="flag pend">Pendente de commit/push</span></span>
+      </div>
+      <div id="listaLimpeza"></div>
+      <div class="acoes">
+        <button type="button" class="btn perigo" id="btnApagar" disabled>Apagar selecionadas</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Arquivo de configuração -->
+  <section class="painel">
+    <h2 class="titulo">Configuração salva</h2>
+    <p class="dica">Guarda as versões, o "Salvar em:" de cada tipo de rotina e as últimas escolhas. Tudo é carregado ao abrir a ferramenta.</p>
+    <p class="status" id="statusArquivo"></p>
+    <div class="acoes">
+      <button type="button" class="btn peq" id="btnArqCriar" hidden title="Cria um arquivo .json no computador onde a configuração será salva">Criar arquivo de configuração</button>
+      <button type="button" class="btn peq" id="btnArqAbrir" hidden title="Usa um arquivo .json que já existe">Usar arquivo existente</button>
+      <button type="button" class="btn peq pri" id="btnArqReconectar" hidden>Reconectar arquivo</button>
+      <button type="button" class="btn peq link" id="btnArqDesvincular" hidden>Desvincular arquivo</button>
+    </div>
   </section>
 </main>
 
