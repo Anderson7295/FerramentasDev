@@ -39,3 +39,4 @@ summary{cursor:pointer;font-weight:600;color:var(--pri)}
 .passos{padding-left:20px;line-height:1.55;font-size:.92rem}
 .passos li{margin-bottom:6px}
 kbd{border:1px solid var(--bd);border-bottom-width:2px;border-radius:4px;padding:0 5px;font-family:inherit;font-size:.85em;background:var(--card)}
+.voltar{display:inline-block;margin-bottom:8px;font-size:.88rem;text-decoration:none}.voltar:hover{text-decoration:underline}
