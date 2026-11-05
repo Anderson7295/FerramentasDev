@@ -9,6 +9,52 @@
   function lerClientes() {
     try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { return []; }
   }
+  // ---------- sugestões: último usuário e último diretório ----------
+  var KEY_ULTIMOS = 'appcontroller.ultimos';
+  var PADRAO = { usuario: 'mf.manager', exe: 'C:\\Users\\seu.usuario\\AppData\\Local\\GraphOn\\AppController\\AppController.exe' };
+  var sugerido = { usuario: '', exe: '' }; // último valor sugerido em cada campo
+  var formLivre = true;                    // false quando há cliente carregado/salvo no formulário
+
+  function lerUltimos() {
+    try {
+      var u = JSON.parse(localStorage.getItem(KEY_ULTIMOS));
+      if (u) return u;
+      var exeAntigo = localStorage.getItem(KEY_EXE); // versão anterior guardava só o diretório
+      if (exeAntigo) return { exe: exeAntigo, em: 0 };
+    } catch (e) {}
+    return {};
+  }
+  function guardarUltimos(u) {
+    try { localStorage.setItem(KEY_ULTIMOS, JSON.stringify(u)); } catch (e) {}
+  }
+  // Atualiza os últimos valores. Devolve true se algo mudou.
+  function registrarUltimos(v, comExe) {
+    var u = lerUltimos();
+    var mudou = false;
+    if (v.usuario && v.usuario !== u.usuario) { u.usuario = v.usuario; mudou = true; }
+    if (comExe && v.exe && v.exe !== u.exe) { u.exe = v.exe; mudou = true; }
+    if (mudou) { u.em = Date.now(); guardarUltimos(u); }
+    return mudou;
+  }
+  // Fica com o mais recente entre o navegador e o arquivo.
+  function mesclarUltimos(outros) {
+    if (!outros || typeof outros !== 'object') return;
+    var u = lerUltimos();
+    if ((outros.em || 0) < (u.em || 0)) return;
+    guardarUltimos({ usuario: outros.usuario || u.usuario, exe: outros.exe || u.exe, em: outros.em || 0 });
+  }
+  function sugestao(k) { return lerUltimos()[k] || PADRAO[k]; }
+  // Preenche usuário e diretório, sem apagar o que a pessoa digitou (exceto com forcar).
+  function aplicarSugestoes(forcar) {
+    if (!forcar && !formLivre) return;
+    ['usuario', 'exe'].forEach(function (k) {
+      if (forcar || $(k).value === sugerido[k]) {
+        sugerido[k] = sugestao(k);
+        $(k).value = sugerido[k];
+      }
+    });
+  }
+
   function gravarClientes(lista) {
     try { localStorage.setItem(KEY, JSON.stringify(lista)); }
     catch (e) { toast('Não foi possível salvar no navegador.'); return false; }
@@ -54,7 +100,7 @@
   }
   function gravarArquivo(lista) {
     if (!arq || !arqOk) return;
-    var texto = JSON.stringify(lista, null, 2);
+    var texto = JSON.stringify({ clientes: lista, ultimos: lerUltimos() }, null, 2);
     filaEscrita = filaEscrita.then(function () {
       return arq.createWritable().then(function (w) { return w.write(texto).then(function () { return w.close(); }); });
     }).catch(function () {
@@ -64,20 +110,27 @@
   }
   function lerArquivo() {
     return arq.getFile().then(function (f) { return f.text(); }).then(function (t) {
-      if (!t.trim()) return [];
-      var d = JSON.parse(t);
-      if (!Array.isArray(d)) throw new Error('formato');
-      return d;
+      if (!t.trim()) return { clientes: [] };
+      return interpretarDados(JSON.parse(t));
     });
+  }
+  // Aceita o formato atual { clientes, ultimos } e o antigo (só a lista).
+  function interpretarDados(d) {
+    if (Array.isArray(d)) return { clientes: d };
+    if (d && Array.isArray(d.clientes)) return { clientes: d.clientes, ultimos: d.ultimos };
+    throw new Error('formato');
   }
   // Carrega do arquivo (ele manda), junta com o que só existe no navegador e grava de volta.
   function sincronizar() {
     return lerArquivo().then(function (doArquivo) {
-      var lista = mesclar(lerClientes(), doArquivo);
+      var lista = mesclar(lerClientes(), doArquivo.clientes);
+      mesclarUltimos(doArquivo.ultimos);
       try { localStorage.setItem(KEY, JSON.stringify(lista)); } catch (e) {}
       gravarArquivo(lista);
       renderLista($('listaClientes').value);
       renderArquivo();
+      aplicarSugestoes();
+      atualizarEstado();
       return lista;
     });
   }
@@ -179,14 +232,14 @@
     el.textContent = 'Preencha todos os campos obrigatórios e clique em "Gerar comando".';
     el.classList.add('vazio');
   }
-  function gerar() {
+  function gerar(manual) {
     var v = valores();
     if (faltando(v).length) return;
     comandoAtual = montarComando(v);
     var el = $('comando');
     el.textContent = comandoAtual;
     el.classList.remove('vazio');
-    try { localStorage.setItem(KEY_EXE, v.exe); } catch (e) {}
+    if (manual === true && registrarUltimos(v, false)) gravarArquivo(lerClientes());
     atualizarEstado();
   }
 
@@ -285,6 +338,8 @@
     var i = lista.findIndex(function (c) { return c.nome.toLowerCase() === v.nome.toLowerCase(); });
     if (i >= 0 && !confirm('Já existe o cliente "' + lista[i].nome + '". Deseja sobrescrever?')) return;
     if (i >= 0) lista[i] = v; else lista.push(v);
+    registrarUltimos(v, true);
+    formLivre = false;
     if (gravarClientes(lista)) {
       renderLista(v.nome);
       toast(faltando(v).length ? 'Cliente salvo (parcialmente preenchido).' : 'Cliente salvo!');
@@ -295,7 +350,9 @@
     var c = lerClientes().find(function (x) { return x.nome === nome; });
     if (!c) return;
     ['nome', 'exe', 'host', 'usuario', 'senha'].forEach(function (k) { $(k).value = c[k] || ''; });
-    if (!c.exe) { try { $('exe').value = localStorage.getItem(KEY_EXE) || ''; } catch (e) {} }
+    if (!c.exe) $('exe').value = sugestao('exe');
+    if (!c.usuario) $('usuario').value = sugestao('usuario');
+    formLivre = false;
     limparComando();
     atualizarEstado();
     if (!faltando(valores()).length) gerar();
@@ -311,7 +368,9 @@
     });
   }
   function limpar() {
-    ['nome', 'host', 'usuario', 'senha'].forEach(function (k) { $(k).value = ''; });
+    ['nome', 'host', 'senha'].forEach(function (k) { $(k).value = ''; });
+    formLivre = true;
+    aplicarSugestoes(true);
     $('listaClientes').value = '';
     estadoLista();
     limparComando();
@@ -329,9 +388,11 @@
     var r = new FileReader();
     r.onload = function () {
       try {
-        var novos = JSON.parse(r.result);
-        if (!Array.isArray(novos)) throw new Error();
-        gravarClientes(mesclar(lerClientes(), novos)); renderLista(); toast('Lista importada.');
+        var dados = interpretarDados(JSON.parse(r.result));
+        mesclarUltimos(dados.ultimos);
+        gravarClientes(mesclar(lerClientes(), dados.clientes)); renderLista();
+        aplicarSugestoes(); atualizarEstado();
+        toast('Lista importada.');
       } catch (e) { toast('Arquivo inválido.'); }
       ev.target.value = '';
     };
@@ -346,7 +407,7 @@
 
   // ---------- eventos ----------
   ['nome', 'exe', 'host', 'usuario', 'senha'].forEach(function (k) { $(k).addEventListener('input', atualizarEstado); });
-  $('btnGerar').addEventListener('click', gerar);
+  $('btnGerar').addEventListener('click', function () { gerar(true); });
   $('btnCopiar').addEventListener('click', copiar);
   $('btnBat').addEventListener('click', baixarBat);
   $('btnExecutar').addEventListener('click', executar);
@@ -375,7 +436,7 @@
     s.type = mostrar ? 'text' : 'password'; this.textContent = mostrar ? 'Ocultar' : 'Mostrar';
   });
 
-  try { $('exe').value = localStorage.getItem(KEY_EXE) || ''; } catch (e) {}
+  aplicarSugestoes();
   renderLista();
   iniciarArquivo();
   renderDireto();
