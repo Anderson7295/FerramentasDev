@@ -14,6 +14,7 @@ const TYPES = {
   '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon',
   '.zip': 'application/zip',
+  '.exe': 'application/octet-stream',
   '.md': 'text/markdown; charset=utf-8',
   '.ps1': 'text/plain; charset=utf-8',
   '.cmd': 'text/plain; charset=utf-8'

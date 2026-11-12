@@ -8,5 +8,5 @@ Comando manual: Copiar comando, Win+R (Executar do Windows), Ctrl+V e Enter.
 
 - Gerar comando / Executar só ficam ativos com os 4 campos obrigatórios preenchidos.
 - Clientes ficam salvos no navegador (localStorage), inclusive incompletos. No Chrome/Edge, "Criar arquivo da lista" vincula um .json no computador (ex.: `C:\FerramentasDev\clientes-tcloud.json`): a partir daí salvar/excluir gravam no arquivo e a página carrega dele automaticamente. Exportar/Importar .json continuam disponíveis. A senha fica salva em texto puro.
-- Executar direto (seção 2 do site): rode uma vez o `instalar-launcher.cmd` de `launcher/AppControllerLauncher.zip` (registra o protocolo `appcontroller:` só para o usuário atual, sem admin) e clique em "Já instalei". O site mostra o passo a passo. O launcher só executa arquivos chamados `AppController.exe` que existam no disco.
+- Executar direto (seção 2 do site): baixe e dê duplo clique em `launcher/AppControllerLauncher.exe` (registra o protocolo `appcontroller:` só para o usuário atual, sem admin) e clique em "Já instalei". Código-fonte em `fonte-exe/`. O site mostra o passo a passo. O launcher só executa arquivos chamados `AppController.exe` que existam no disco.
 - Alternativa sem instalar nada: Baixar .bat (duplo clique abre a conexão).
