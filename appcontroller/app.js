@@ -325,7 +325,6 @@
   }
   function estadoLista() {
     var tem = !!$('listaClientes').value;
-    $('btnCarregar').disabled = !tem;
     $('btnExcluir').disabled = !tem;
   }
   function salvar() {
@@ -413,10 +412,8 @@
   $('btnExecutar').addEventListener('click', executar);
   $('btnSalvar').addEventListener('click', salvar);
   $('btnLimpar').addEventListener('click', limpar);
-  $('btnCarregar').addEventListener('click', carregar);
   $('btnExcluir').addEventListener('click', excluir);
-  $('listaClientes').addEventListener('change', estadoLista);
-  $('listaClientes').addEventListener('dblclick', carregar);
+  $('listaClientes').addEventListener('change', function () { estadoLista(); carregar(); });
   $('btnJaInstalei').addEventListener('click', function () {
     try { localStorage.setItem(KEY_INST, '1'); } catch (e) {}
     renderDireto(); toast('Pronto! Agora o botão Executar abre o AppController.');
