@@ -201,7 +201,7 @@ func existe(p string) bool    { _, err := os.Stat(p); return err == nil }
 // ---------- /clonar ----------
 type PedidoClone struct {
 	Jira, Sigla, Link, BranchBase, Branch, PastaBase string
-	Push, Pman                                       bool
+	Push, Pman, Sobrescrever                         bool
 }
 
 type RespClone struct {
@@ -211,6 +211,10 @@ type RespClone struct {
 	Etapas   []EtapaR `json:"etapas"`
 	Faltando []string `json:"faltando"`
 	Erro     *string  `json:"erro"`
+	// Existe indica que a pasta de destino já existia e nada foi feito;
+	// o site pergunta ao usuário e reenvia com sobrescrever=true.
+	Existe    bool   `json:"existe,omitempty"`
+	Pendencia string `json:"pendencia,omitempty"`
 }
 
 func Clonar(b PedidoClone) (*RespClone, error) {
@@ -247,10 +251,28 @@ func Clonar(b PedidoClone) (*RespClone, error) {
 	r := &RespClone{Sigla: b.Sigla, Destino: dest, Etapas: []EtapaR{}, Faltando: []string{}}
 	erro := func(s string) { r.Erro = &s }
 
-	if existe(dest) {
+	if existe(dest) && !b.Sobrescrever {
 		erro("A pasta já existe, versão pulada.")
+		r.Existe = true
+		if existe(filepath.Join(dest, ".git")) {
+			MarcarSeguro(dest)
+			r.Pendencia = InfoClone(dest).Detalhe
+		}
 		r.Etapas = append(r.Etapas, EtapaR{"Verificar pasta", false, "A pasta já existe: " + dest})
 		return r, nil
+	}
+	if existe(dest) {
+		det := "Apagada: " + dest
+		ok := true
+		if err := apagarPasta(dest); err != nil {
+			det, ok = "Não foi possível apagar "+dest+": "+err.Error(), false
+		}
+		r.Etapas = append(r.Etapas, EtapaR{"Apagar clone anterior", ok, det})
+		Log("sobrescrever " + dest + ": " + det)
+		if !ok {
+			erro("Não foi possível apagar o clone anterior.")
+			return r, nil
+		}
 	}
 	os.MkdirAll(pv, 0o755)
 
@@ -426,6 +448,17 @@ func ListarLimpeza(pastaBase string) (map[string]any, error) {
 	return map[string]any{"ok": true, "itens": itens}, nil
 }
 
+// apagarPasta remove a pasta inteira, tirando antes o somente leitura (arquivos do .git).
+func apagarPasta(p string) error {
+	filepath.WalkDir(p, func(x string, d os.DirEntry, err error) error {
+		if err == nil && !d.IsDir() {
+			os.Chmod(x, 0o666)
+		}
+		return nil
+	})
+	return os.RemoveAll(p)
+}
+
 func vazia(p string) bool {
 	es, err := os.ReadDir(p)
 	return err == nil && len(es) == 0
@@ -453,13 +486,7 @@ func ApagarLimpeza(pastaBase string, caminhos []string) (map[string]any, error) 
 			if !existe(filepath.Join(full, ".git")) {
 				return fmt.Errorf("Não é um clone git.")
 			}
-			filepath.WalkDir(full, func(p string, d os.DirEntry, err error) error {
-				if err == nil && !d.IsDir() {
-					os.Chmod(p, 0o666) // tira o somente leitura (arquivos do .git)
-				}
-				return nil
-			})
-			if err := os.RemoveAll(full); err != nil {
+			if err := apagarPasta(full); err != nil {
 				return err
 			}
 			for _, p := range []string{ver, dem} {

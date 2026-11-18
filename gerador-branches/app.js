@@ -455,6 +455,12 @@
       if (!ok) div.title = log.slice(0, 600);
     }
   }
+  function confirmarSobrescrever(it, res) {
+    let msg = it.nomeVersao + ' (' + it.sigla + '): já existe um clone anterior em\n' + res.destino + '\n\n';
+    if (res.pendencia) msg += 'ATENÇÃO: esse clone tem ' + res.pendencia + '. Isso será perdido.\n\n';
+    msg += 'Deseja sobrescrever? A pasta do clone anterior será apagada e o clone será feito de novo.';
+    return confirm(msg);
+  }
   async function clonar() {
     const r = gerar();
     if (!r) return;
@@ -469,9 +475,12 @@
       const it = r.itens[i], div = linhas[i];
       div.querySelector('.msg').textContent = 'clonando ' + it.base + '…';
       try {
-        const res = await chamarAgente('/clonar', {
-          jira: r.jira, pastaBase: pasta, link, sigla: it.sigla, branchBase: it.base, branch: it.branch, push, pman,
-        });
+        const pedido = { jira: r.jira, pastaBase: pasta, link, sigla: it.sigla, branchBase: it.base, branch: it.branch, push, pman };
+        let res = await chamarAgente('/clonar', pedido);
+        if (!res.ok && res.existe && confirmarSobrescrever(it, res)) {
+          div.querySelector('.msg').textContent = 'apagando clone anterior e clonando ' + it.base + '…';
+          res = await chamarAgente('/clonar', Object.assign({}, pedido, { sobrescrever: true }));
+        }
         preencherResultado(div, res);
         if (res.ok) okCount++;
       } catch (e) {
