@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"unsafe"
 
+	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/registry"
 )
 
@@ -119,4 +120,15 @@ func ApagarPastaDepois(pasta string) {
 	c.SysProcAttr = &syscall.SysProcAttr{CreationFlags: createNoWindow | detachedProcess, HideWindow: true,
 		CmdLine: `cmd.exe /d /c ping -n 3 127.0.0.1 >nul & rmdir /s /q "` + pasta + `"`}
 	c.Start()
+}
+
+// Elevado indica se este processo está rodando como administrador.
+func Elevado() bool {
+	return windows.GetCurrentProcessToken().IsElevated()
+}
+
+// AbrirComoUsuario abre um endereço (ex.: protocolo) pelo Explorer, que roda
+// sem privilégio de administrador mesmo quando este processo está elevado.
+func AbrirComoUsuario(endereco string) error {
+	return exec.Command("explorer.exe", endereco).Start()
 }

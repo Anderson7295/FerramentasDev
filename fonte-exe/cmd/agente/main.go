@@ -6,6 +6,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
@@ -23,7 +24,7 @@ const (
 	protocolo = "ferramentasdev-agente"
 	nomeRun   = "FerramentasDevAgente"
 	Porta     = 47615
-	Versao    = "2.0"
+	Versao    = "2.1"
 )
 
 func pasta() string   { return comum.PastaApp("FerramentasDevAgente") }
@@ -76,12 +77,24 @@ func instalar(perguntar bool) {
 		comum.Erro(titulo, "Não foi possível registrar o protocolo:\n"+err.Error())
 	}
 	os.Remove(filepath.Join(pasta(), "agente-ferramentasdev.ps1")) // sobra da versão PowerShell
-	if err := comum.IniciarDesacoplado(destino(), "--servir"); err != nil {
-		comum.Erro(titulo, "Agente instalado, mas não foi possível iniciá-lo:\n"+err.Error())
+	// O agente nunca deve rodar como administrador: as pastas clonadas ficariam com
+	// dono "Administradores" e o git/TortoiseGit recusaria o commit.
+	var errIni error
+	if comum.Elevado() {
+		errIni = comum.AbrirComoUsuario(protocolo + ":iniciar")
+	} else {
+		errIni = comum.IniciarDesacoplado(destino(), "--servir")
+	}
+	if errIni != nil {
+		comum.Erro(titulo, "Agente instalado, mas não foi possível iniciá-lo:\n"+errIni.Error())
 		os.Exit(1)
 	}
-	if !aguardarAgente(6 * time.Second) {
+	if !aguardarAgente(10 * time.Second) {
 		comum.Erro(titulo, fmt.Sprintf("Agente instalado em\n%s\n\nmas ele não respondeu na porta %d. Verifique se outro programa usa essa porta ou se o antivírus bloqueou o agente.", pasta(), Porta))
+		os.Exit(1)
+	}
+	if agenteElevado() {
+		comum.Erro(titulo, "O agente que está rodando foi aberto como administrador, e assim as pastas clonadas ficam com outro dono e o commit falha.\n\nReinicie o computador (o agente volta sozinho, sem administrador) ou execute este instalador de novo com \"Executar como administrador\" para trocar o agente.")
 		os.Exit(1)
 	}
 	comum.Info(titulo, fmt.Sprintf("Pronto! O agente foi instalado e está em execução (porta %d).\nEle inicia sozinho junto com o Windows.\n\nVolte ao site e clique em \"Verificar de novo\".", Porta))
@@ -98,6 +111,18 @@ func aguardarAgente(lim time.Duration) bool {
 		time.Sleep(300 * time.Millisecond)
 	}
 	return false
+}
+
+func agenteElevado() bool {
+	cli := http.Client{Timeout: 2 * time.Second}
+	r, err := cli.Get(fmt.Sprintf("http://127.0.0.1:%d/status", Porta))
+	if err != nil {
+		return false
+	}
+	defer r.Body.Close()
+	var s struct{ Elevado bool }
+	json.NewDecoder(r.Body).Decode(&s)
+	return s.Elevado
 }
 
 func desinstalar() {

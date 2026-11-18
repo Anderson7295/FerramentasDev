@@ -142,6 +142,26 @@ func Executar(exe string, args []string, dir string) Resultado {
 
 func Git(args []string, dir string) Resultado { return Executar("git", args, dir) }
 
+// MarcarSeguro registra a pasta em safe.directory do git do usuário. Evita o erro
+// "detected dubious ownership" quando a pasta foi criada por outro dono
+// (ex.: agente rodando como administrador) e o commit é feito pelo TortoiseGit.
+func MarcarSeguro(dir string) {
+	p := filepath.ToSlash(dir)
+	casa := os.Getenv("USERPROFILE")
+	if casa == "" {
+		casa, _ = os.UserHomeDir()
+	}
+	atual := Git([]string{"config", "--global", "--get-all", "safe.directory"}, casa)
+	for _, l := range strings.Split(atual.Saida, "\n") {
+		if strings.EqualFold(strings.TrimSpace(l), p) || strings.TrimSpace(l) == "*" {
+			return
+		}
+	}
+	if r := Git([]string{"config", "--global", "--add", "safe.directory", p}, casa); r.Codigo == 0 {
+		Log("safe.directory adicionado: " + p)
+	}
+}
+
 type EtapaR struct {
 	Etapa   string `json:"etapa"`
 	Ok      bool   `json:"ok"`
@@ -237,6 +257,7 @@ func Clonar(b PedidoClone) (*RespClone, error) {
 	okClone := etapa(&r.Etapas, "git clone ("+b.BranchBase+")", Git([]string{"clone", "--branch", b.BranchBase, b.Link, dest}, pv))
 	var bowers []string
 	if okClone {
+		MarcarSeguro(dest)
 		okCheckout := etapa(&r.Etapas, "Criar branch "+b.Branch, Git([]string{"checkout", "-b", b.Branch}, dest))
 		if okCheckout && b.Push {
 			etapa(&r.Etapas, "git push para o Azure", Git([]string{"push", "-u", "origin", b.Branch}, dest))
@@ -395,6 +416,7 @@ func ListarLimpeza(pastaBase string) (map[string]any, error) {
 				if !existe(filepath.Join(pr, ".git")) {
 					continue
 				}
+				MarcarSeguro(pr)
 				i := InfoClone(pr)
 				i.Caminho, i.Demanda, i.Versao, i.Repo = pr, dem.Name(), ver.Name(), rep.Name()
 				itens = append(itens, i)
@@ -506,7 +528,7 @@ func Tratar(w http.ResponseWriter, req *http.Request) {
 		if _, err := exec.LookPath("pman"); err == nil {
 			pman = "pman"
 		}
-		Responder(w, req, 200, map[string]any{"ok": true, "versao": Versao, "autorizado": Autorizado(o), "git": versaoCmd("git", "--version"), "pman": pman})
+		Responder(w, req, 200, map[string]any{"ok": true, "versao": Versao, "autorizado": Autorizado(o), "git": versaoCmd("git", "--version"), "pman": pman, "elevado": comum.Elevado()})
 		return
 	}
 	if req.Method != http.MethodPost {
