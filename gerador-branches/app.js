@@ -436,7 +436,7 @@
     const ok = !erroRede && r && r.ok;
     ico.className = 'ico ' + (ok ? 'ok' : 'erro');
     ico.textContent = ok ? '✓' : '✗';
-    div.querySelector('.msg').textContent = ok ? 'pronto' : (erroRede ? 'falha ao falar com o agente' : (r.erro || 'erro'));
+    div.querySelector('.msg').textContent = ok ? (r.branchExistente ? 'pronto (a branch já existia no Azure e foi só vinculada)' : 'pronto') : (erroRede ? 'falha ao falar com o agente' : (r.erro || 'erro'));
     div.querySelector('.cam').textContent = r && r.destino ? r.destino : '';
     if (r && r.faltando && r.faltando.length) {
       const p = document.createElement('p');

@@ -213,8 +213,10 @@ type RespClone struct {
 	Erro     *string  `json:"erro"`
 	// Existe indica que a pasta de destino já existia e nada foi feito;
 	// o site pergunta ao usuário e reenvia com sobrescrever=true.
-	Existe    bool   `json:"existe,omitempty"`
-	Pendencia string `json:"pendencia,omitempty"`
+	Existe bool `json:"existe,omitempty"`
+	// BranchExistente indica que a branch já existia no Azure e só foi vinculada.
+	BranchExistente bool   `json:"branchExistente"`
+	Pendencia       string `json:"pendencia,omitempty"`
 }
 
 func Clonar(b PedidoClone) (*RespClone, error) {
@@ -280,8 +282,16 @@ func Clonar(b PedidoClone) (*RespClone, error) {
 	var bowers []string
 	if okClone {
 		MarcarSeguro(dest)
-		okCheckout := etapa(&r.Etapas, "Criar branch "+b.Branch, Git([]string{"checkout", "-b", b.Branch}, dest))
-		if okCheckout && b.Push {
+		// Se a branch já existe no Azure, faz checkout dela (vinculada a origin) em vez de criar de novo.
+		existeRemota := Git([]string{"rev-parse", "--verify", "--quiet", "refs/remotes/origin/" + b.Branch}, dest).Codigo == 0
+		var okCheckout bool
+		if existeRemota {
+			r.BranchExistente = true
+			okCheckout = etapa(&r.Etapas, "Branch "+b.Branch+" já existe no Azure: checkout e vínculo", Git([]string{"checkout", "-b", b.Branch, "--track", "origin/" + b.Branch}, dest))
+		} else {
+			okCheckout = etapa(&r.Etapas, "Criar branch "+b.Branch, Git([]string{"checkout", "-b", b.Branch}, dest))
+		}
+		if okCheckout && b.Push && !existeRemota {
 			etapa(&r.Etapas, "git push para o Azure", Git([]string{"push", "-u", "origin", b.Branch}, dest))
 		}
 		if b.Pman {

@@ -24,7 +24,7 @@ const (
 	protocolo = "ferramentasdev-agente"
 	nomeRun   = "FerramentasDevAgente"
 	Porta     = 47615
-	Versao    = "2.2"
+	Versao    = "2.3"
 )
 
 func pasta() string   { return comum.PastaApp("FerramentasDevAgente") }
