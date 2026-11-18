@@ -126,18 +126,3 @@ func ApagarPastaDepois(pasta string) {
 func Elevado() bool {
 	return windows.GetCurrentProcessToken().IsElevated()
 }
-
-// AbrirComoUsuario abre um endereço (ex.: protocolo) pelo Explorer, que roda
-// sem privilégio de administrador mesmo quando este processo está elevado.
-func AbrirComoUsuario(endereco string) error {
-	return exec.Command("explorer.exe", endereco).Start()
-}
-
-// EncerrarScriptPowerShell finaliza processos powershell.exe cuja linha de comando
-// contém o trecho informado (usado para parar o agente antigo em PowerShell).
-func EncerrarScriptPowerShell(trecho string) {
-	ps := `Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" | Where-Object { $_.CommandLine -like '*` + trecho + `*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }`
-	c := exec.Command("powershell.exe", "-NoProfile", "-NonInteractive", "-Command", ps)
-	SemJanela(c)
-	c.Run()
-}

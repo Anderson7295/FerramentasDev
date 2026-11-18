@@ -35,7 +35,4 @@ func ComandoShell(linha string) *exec.Cmd                 { return exec.Command(
 func EncerrarOutros(nomeExe string)                       {}
 func ApagarPastaDepois(pasta string)                      { os.RemoveAll(pasta) }
 
-func Elevado() bool                          { return false }
-func AbrirComoUsuario(endereco string) error { return nil }
-
-func EncerrarScriptPowerShell(trecho string) {}
+func Elevado() bool { return false }

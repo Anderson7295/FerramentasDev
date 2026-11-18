@@ -366,7 +366,7 @@
 
   // ---------- agente local ----------
   const AGENTE = 'http://localhost:47615';
-  const VERSAO_AGENTE = '2.4'; // versão do FerramentasDevAgente.exe publicado junto com o site
+  const VERSAO_AGENTE = '2.5'; // versão do FerramentasDevAgente.exe publicado junto com o site
   function versaoMenor(a, b) {
     const pa = String(a || '0').split('.').map(Number), pb = String(b).split('.').map(Number);
     for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
@@ -404,7 +404,8 @@
     } else if (versaoMenor(agente.versao, VERSAO_AGENTE)) {
       st.className = 'status pend';
       st.textContent = 'Agente desatualizado: está rodando a v' + agente.versao + (agente.caminho ? ' (' + agente.caminho + ')' : '') +
-        ' e a versão atual é a v' + VERSAO_AGENTE + '. Baixe o FerramentasDevAgente.exe (passos abaixo) e dê duplo clique para atualizar.';
+        ' e a versão atual é a v' + VERSAO_AGENTE + '. Siga os passos de "Atualização do agente" abaixo.';
+      $('atualizacaoAgente').open = true;
       $('instrucoesAgente').open = true;
     } else {
       st.className = agente.git ? 'status ok' : 'status pend';

@@ -94,6 +94,18 @@
       </ol>
       <p class="dica">O agente só aceita pedidos de sites que você autorizou, só escuta em <code>localhost</code> e só executa <code>git</code> e <code>pman</code>. Ele usa o login do Azure DevOps já salvo no git do seu computador. Para atualizar ou remover, dê duplo clique de novo no <code>FerramentasDevAgente.exe</code> e escolha a opção.</p>
     </details>
+    <details id="atualizacaoAgente">
+      <summary>Atualização do agente</summary>
+      <ol>
+        <li>Encerre o agente que está rodando. Abra o <b>PowerShell</b> e rode os dois comandos abaixo: o primeiro encerra o agente antigo em PowerShell (v1.0) e o segundo encerra o agente .exe (v2.0 em diante). Se aparecer um aviso de que nada foi encontrado, pode ignorar.
+          <pre class="cmd-agente">Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" | Where-Object { $_.CommandLine -like '*agente-ferramentasdev.ps1*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
+taskkill /F /IM FerramentasDevAgente.exe</pre>
+        </li>
+        <li>Baixe o <a href="agente/FerramentasDevAgente.exe" download><b>FerramentasDevAgente.exe</b></a> novo, dê duplo clique e escolha <b>Sim</b> para atualizar.</li>
+        <li>Volte aqui e clique em <b>Verificar de novo</b>. A mensagem verde mostra a versão e o caminho do agente instalado.</li>
+      </ol>
+      <p class="dica">Também funciona reiniciar o computador em vez do passo 1: o agente novo inicia sozinho com o Windows.</p>
+    </details>
 
     <div class="linha">
       <label>Link do clone da rotina

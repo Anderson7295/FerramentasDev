@@ -24,7 +24,7 @@ const (
 	protocolo = "ferramentasdev-agente"
 	nomeRun   = "FerramentasDevAgente"
 	Porta     = 47615
-	Versao    = "2.4"
+	Versao    = "2.5"
 )
 
 func pasta() string   { return comum.PastaApp("FerramentasDevAgente") }
@@ -64,7 +64,6 @@ func instalar(perguntar bool) {
 		}
 	}
 	comum.EncerrarOutros(nomeExe)
-	comum.EncerrarScriptPowerShell("agente-ferramentasdev.ps1") // agente antigo (v1.0)
 	time.Sleep(700 * time.Millisecond)
 	if err := comum.CopiarPara(destino()); err != nil {
 		comum.Erro(titulo, "Não foi possível copiar o agente para\n"+destino()+"\n\n"+err.Error())
@@ -78,16 +77,12 @@ func instalar(perguntar bool) {
 		comum.Erro(titulo, "Não foi possível registrar o protocolo:\n"+err.Error())
 	}
 	os.Remove(filepath.Join(pasta(), "agente-ferramentasdev.ps1")) // sobra da versão PowerShell
-	// O agente nunca deve rodar como administrador: as pastas clonadas ficariam com
-	// dono "Administradores" e o git/TortoiseGit recusaria o commit.
-	var errIni error
-	if comum.Elevado() {
-		errIni = comum.AbrirComoUsuario(protocolo + ":iniciar")
-	} else {
-		errIni = comum.IniciarDesacoplado(destino(), "--servir")
+	if err := comum.IniciarDesacoplado(destino(), "--servir"); err != nil {
+		comum.Erro(titulo, "Agente instalado, mas não foi possível iniciá-lo:\n"+err.Error())
+		os.Exit(1)
 	}
-	if errIni != nil {
-		comum.Erro(titulo, "Agente instalado, mas não foi possível iniciá-lo:\n"+errIni.Error())
+	if v := versaoRodando(); v != "?" && v != Versao {
+		comum.Erro(titulo, fmt.Sprintf("O agente novo (v%s) foi instalado, mas o agente anterior (v%s) ainda está rodando e ocupa a porta %d.\n\nReinicie o computador: o agente novo inicia sozinho.", Versao, v, Porta))
 		os.Exit(1)
 	}
 	if !aguardarAgente(10 * time.Second) {
@@ -95,11 +90,7 @@ func instalar(perguntar bool) {
 		os.Exit(1)
 	}
 	if v := versaoRodando(); v != Versao {
-		comum.Erro(titulo, fmt.Sprintf("O agente novo (v%s) foi instalado, mas outro agente (v%s) continua usando a porta %d.\n\nReinicie o computador: o agente novo inicia sozinho.", Versao, v, Porta))
-		os.Exit(1)
-	}
-	if agenteElevado() {
-		comum.Erro(titulo, "O agente que está rodando foi aberto como administrador, e assim as pastas clonadas ficam com outro dono e o commit falha.\n\nReinicie o computador (o agente volta sozinho, sem administrador) ou execute este instalador de novo com \"Executar como administrador\" para trocar o agente.")
+		comum.Erro(titulo, fmt.Sprintf("O agente novo (v%s) foi instalado, mas o agente anterior (v%s) continua rodando na porta %d.\n\nReinicie o computador: o agente novo inicia sozinho.", Versao, v, Porta))
 		os.Exit(1)
 	}
 	comum.Info(titulo, fmt.Sprintf("Pronto! O agente v"+Versao+" foi instalado em\n"+destino()+"\ne está em execução (porta %d).\nEle inicia sozinho junto com o Windows.\n\nVolte ao site e clique em \"Verificar de novo\".", Porta))
@@ -109,7 +100,7 @@ func aguardarAgente(lim time.Duration) bool {
 	cli := http.Client{Timeout: time.Second}
 	fim := time.Now().Add(lim)
 	for time.Now().Before(fim) {
-		if r, err := cli.Get(fmt.Sprintf("http://127.0.0.1:%d/status", Porta)); err == nil {
+		if r, err := cli.Get(fmt.Sprintf("http://localhost:%d/status", Porta)); err == nil {
 			r.Body.Close()
 			return r.StatusCode == 200
 		}
@@ -120,7 +111,7 @@ func aguardarAgente(lim time.Duration) bool {
 
 func versaoRodando() string {
 	cli := http.Client{Timeout: 2 * time.Second}
-	r, err := cli.Get(fmt.Sprintf("http://127.0.0.1:%d/status", Porta))
+	r, err := cli.Get(fmt.Sprintf("http://localhost:%d/status", Porta))
 	if err != nil {
 		return "?"
 	}
@@ -128,18 +119,6 @@ func versaoRodando() string {
 	var s struct{ Versao string }
 	json.NewDecoder(r.Body).Decode(&s)
 	return s.Versao
-}
-
-func agenteElevado() bool {
-	cli := http.Client{Timeout: 2 * time.Second}
-	r, err := cli.Get(fmt.Sprintf("http://127.0.0.1:%d/status", Porta))
-	if err != nil {
-		return false
-	}
-	defer r.Body.Close()
-	var s struct{ Elevado bool }
-	json.NewDecoder(r.Body).Decode(&s)
-	return s.Elevado
 }
 
 func desinstalar() {
