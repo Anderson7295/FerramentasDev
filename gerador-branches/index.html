@@ -88,7 +88,7 @@
     <details id="instrucoesAgente">
       <summary>Como instalar o agente (uma vez por computador)</summary>
       <ol>
-        <li>Baixe o <a href="agente/FerramentasDevAgente.exe" download><b>FerramentasDevAgente.exe</b></a>.</li>
+        <li>Baixe o <a href="agente/FerramentasDevAgente.exe" download><b>FerramentasDevAgente.exe</b></a> (ou <a href="agente/FerramentasDevAgente.zip" download>versão .zip</a>, se o download do .exe for bloqueado: extraia e use o .exe de dentro).</li>
         <li>Dê duplo clique no arquivo baixado (não precisa de administrador). Se o Windows mostrar "O Windows protegeu o computador", clique em <b>Mais informações</b> e depois em <b>Executar assim mesmo</b>. Ao terminar, aparece "Pronto! O agente foi instalado". Ele fica rodando em segundo plano e inicia junto com o Windows.</li>
         <li>Volte aqui e clique em <b>Verificar de novo</b>. Na primeira vez, clique em <b>Autorizar este site no agente</b> e confirme a janela que o agente abrir. Se o navegador perguntar sobre acesso à rede local, permita.</li>
       </ol>
@@ -101,7 +101,7 @@
           <pre class="cmd-agente">Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" | Where-Object { $_.CommandLine -like '*agente-ferramentasdev.ps1*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
 taskkill /F /IM FerramentasDevAgente.exe</pre>
         </li>
-        <li>Baixe o <a href="agente/FerramentasDevAgente.exe" download><b>FerramentasDevAgente.exe</b></a> novo, dê duplo clique e escolha <b>Sim</b> para atualizar.</li>
+        <li>Baixe o <a href="agente/FerramentasDevAgente.exe" download><b>FerramentasDevAgente.exe</b></a> novo (ou <a href="agente/FerramentasDevAgente.zip" download>versão .zip</a>, se o download do .exe for bloqueado: extraia e use o .exe de dentro), dê duplo clique e escolha <b>Sim</b> para atualizar.</li>
         <li>Volte aqui e clique em <b>Verificar de novo</b>. A mensagem verde mostra a versão e o caminho do agente instalado.</li>
       </ol>
       <p class="dica">Também funciona reiniciar o computador em vez do passo 1: o agente novo inicia sozinho com o Windows.</p>
