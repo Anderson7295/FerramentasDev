@@ -366,6 +366,15 @@
 
   // ---------- agente local ----------
   const AGENTE = 'http://localhost:47615';
+  const VERSAO_AGENTE = '2.4'; // versão do FerramentasDevAgente.exe publicado junto com o site
+  function versaoMenor(a, b) {
+    const pa = String(a || '0').split('.').map(Number), pb = String(b).split('.').map(Number);
+    for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+      const x = pa[i] || 0, y = pb[i] || 0;
+      if (x !== y) return x < y;
+    }
+    return false;
+  }
   let agente = { online: false, autorizado: false };
   let ocupado = false;
 
@@ -378,7 +387,7 @@
   }
   function verificarAgente() {
     return chamarAgente('/status').then((s) => {
-      agente = { online: true, autorizado: !!s.autorizado, git: s.git, pman: s.pman, versao: s.versao };
+      agente = { online: true, autorizado: !!s.autorizado, git: s.git, pman: s.pman, versao: s.versao, caminho: s.caminho };
     }, () => { agente = { online: false, autorizado: false }; }).then(renderAgente);
   }
   function renderAgente() {
@@ -392,10 +401,15 @@
     } else if (!agente.autorizado) {
       st.className = 'status pend';
       st.textContent = 'Agente encontrado. Clique em "Autorizar este site no agente" e confirme a janela que vai abrir no Windows.';
+    } else if (versaoMenor(agente.versao, VERSAO_AGENTE)) {
+      st.className = 'status pend';
+      st.textContent = 'Agente desatualizado: está rodando a v' + agente.versao + (agente.caminho ? ' (' + agente.caminho + ')' : '') +
+        ' e a versão atual é a v' + VERSAO_AGENTE + '. Baixe o FerramentasDevAgente.exe (passos abaixo) e dê duplo clique para atualizar.';
+      $('instrucoesAgente').open = true;
     } else {
       st.className = agente.git ? 'status ok' : 'status pend';
       st.textContent = agente.git
-        ? 'Agente conectado (v' + agente.versao + ', ' + agente.git + ').' + (agente.pman ? '' : ' Aviso: o comando pman não foi encontrado no PATH.')
+        ? 'Agente conectado: v' + agente.versao + (agente.caminho ? ', instalado em ' + agente.caminho : '') + ' (' + agente.git + ').' + (agente.pman ? '' : ' Aviso: o comando pman não foi encontrado no PATH.')
         : 'Agente conectado, mas o git não foi encontrado no PATH do Windows.';
       $('instrucoesAgente').open = false;
     }

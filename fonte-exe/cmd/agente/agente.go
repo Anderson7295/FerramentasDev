@@ -565,7 +565,7 @@ func Tratar(w http.ResponseWriter, req *http.Request) {
 		if _, err := exec.LookPath("pman"); err == nil {
 			pman = "pman"
 		}
-		Responder(w, req, 200, map[string]any{"ok": true, "versao": Versao, "autorizado": Autorizado(o), "git": versaoCmd("git", "--version"), "pman": pman, "elevado": comum.Elevado()})
+		Responder(w, req, 200, map[string]any{"ok": true, "versao": Versao, "autorizado": Autorizado(o), "git": versaoCmd("git", "--version"), "pman": pman, "elevado": comum.Elevado(), "caminho": comum.EsteExe()})
 		return
 	}
 	if req.Method != http.MethodPost {

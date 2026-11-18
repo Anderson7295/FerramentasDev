@@ -70,3 +70,4 @@ code{font-family:Consolas,"Courier New",monospace;font-size:.85em;background:var
 .toast.on{opacity:1;transform:none}
 @media (prefers-color-scheme:dark){.status.ok,.flag.ok{color:#3dd6a3}.flag.pend,.erro,.res .falta{color:#ff7b6b}}
 @media (max-width:640px){.linha{grid-template-columns:1fr}.linha4{grid-template-columns:1fr 1fr}}
+#statusAgente{overflow-wrap:anywhere}

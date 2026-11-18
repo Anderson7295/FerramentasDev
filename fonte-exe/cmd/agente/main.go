@@ -24,7 +24,7 @@ const (
 	protocolo = "ferramentasdev-agente"
 	nomeRun   = "FerramentasDevAgente"
 	Porta     = 47615
-	Versao    = "2.3"
+	Versao    = "2.4"
 )
 
 func pasta() string   { return comum.PastaApp("FerramentasDevAgente") }
@@ -64,6 +64,7 @@ func instalar(perguntar bool) {
 		}
 	}
 	comum.EncerrarOutros(nomeExe)
+	comum.EncerrarScriptPowerShell("agente-ferramentasdev.ps1") // agente antigo (v1.0)
 	time.Sleep(700 * time.Millisecond)
 	if err := comum.CopiarPara(destino()); err != nil {
 		comum.Erro(titulo, "Não foi possível copiar o agente para\n"+destino()+"\n\n"+err.Error())
@@ -93,11 +94,15 @@ func instalar(perguntar bool) {
 		comum.Erro(titulo, fmt.Sprintf("Agente instalado em\n%s\n\nmas ele não respondeu na porta %d. Verifique se outro programa usa essa porta ou se o antivírus bloqueou o agente.", pasta(), Porta))
 		os.Exit(1)
 	}
+	if v := versaoRodando(); v != Versao {
+		comum.Erro(titulo, fmt.Sprintf("O agente novo (v%s) foi instalado, mas outro agente (v%s) continua usando a porta %d.\n\nReinicie o computador: o agente novo inicia sozinho.", Versao, v, Porta))
+		os.Exit(1)
+	}
 	if agenteElevado() {
 		comum.Erro(titulo, "O agente que está rodando foi aberto como administrador, e assim as pastas clonadas ficam com outro dono e o commit falha.\n\nReinicie o computador (o agente volta sozinho, sem administrador) ou execute este instalador de novo com \"Executar como administrador\" para trocar o agente.")
 		os.Exit(1)
 	}
-	comum.Info(titulo, fmt.Sprintf("Pronto! O agente foi instalado e está em execução (porta %d).\nEle inicia sozinho junto com o Windows.\n\nVolte ao site e clique em \"Verificar de novo\".", Porta))
+	comum.Info(titulo, fmt.Sprintf("Pronto! O agente v"+Versao+" foi instalado em\n"+destino()+"\ne está em execução (porta %d).\nEle inicia sozinho junto com o Windows.\n\nVolte ao site e clique em \"Verificar de novo\".", Porta))
 }
 
 func aguardarAgente(lim time.Duration) bool {
@@ -111,6 +116,18 @@ func aguardarAgente(lim time.Duration) bool {
 		time.Sleep(300 * time.Millisecond)
 	}
 	return false
+}
+
+func versaoRodando() string {
+	cli := http.Client{Timeout: 2 * time.Second}
+	r, err := cli.Get(fmt.Sprintf("http://127.0.0.1:%d/status", Porta))
+	if err != nil {
+		return "?"
+	}
+	defer r.Body.Close()
+	var s struct{ Versao string }
+	json.NewDecoder(r.Body).Decode(&s)
+	return s.Versao
 }
 
 func agenteElevado() bool {
