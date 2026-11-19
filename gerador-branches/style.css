@@ -72,3 +72,4 @@ code{font-family:Consolas,"Courier New",monospace;font-size:.85em;background:var
 @media (max-width:640px){.linha{grid-template-columns:1fr}.linha4{grid-template-columns:1fr 1fr}}
 #statusAgente{overflow-wrap:anywhere}
 .cmd-agente{margin:6px 0;padding:8px 10px;background:#212529;color:#e9ecef;border-radius:6px;font-size:.78rem;white-space:pre-wrap;word-break:break-all;font-family:Consolas,"Courier New",monospace}
+.homolog{margin-top:8px}

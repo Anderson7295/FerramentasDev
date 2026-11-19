@@ -205,7 +205,10 @@
   // ---------- tela ----------
   const tipoAtual = () => $('tipoRotina').value;
   const def = () => TIPOS[tipoAtual()];
-  const marcadas = () => def().versoes.filter((s) => { const c = $('chk' + s); return c && c.checked; });
+  const marcadas = () => def().versoes.filter((s) => {
+    if (s === 'REL' && !$('homolog').checked) return false; // Release só no período de homologação
+    const c = $('chk' + s); return c && c.checked;
+  });
 
   function renderChecks() {
     const box = $('checksVersoes');
@@ -215,6 +218,7 @@
       l.className = 'chk';
       const c = document.createElement('input');
       c.type = 'checkbox'; c.id = 'chk' + s; c.checked = true;
+      if (s === 'REL') { l.id = 'lblREL'; l.hidden = !$('homolog').checked; c.checked = $('homolog').checked; }
       c.addEventListener('change', renderCamposVersao);
       l.append(c, document.createTextNode(' ' + NOMES_VERSAO[s] + ' (' + s + ')'));
       box.appendChild(l);
@@ -622,6 +626,12 @@
   ['verSup', 'verRel'].forEach((id) => $(id).addEventListener('change', () => {
     const n = normVersao($(id).value); if (n) { $(id).value = n; salvarTela(); renderCamposVersao(); }
   }));
+  $('homolog').addEventListener('change', (e) => {
+    const lbl = $('lblREL'), c = $('chkREL');
+    if (lbl) lbl.hidden = !e.target.checked;
+    if (c) c.checked = e.target.checked;
+    renderCamposVersao();
+  });
   $('btnClonar').addEventListener('click', clonar);
   $('btnAutorizar').addEventListener('click', autorizar);
   $('btnIniciarAgente').addEventListener('click', iniciarAgente);
