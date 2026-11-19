@@ -22,8 +22,8 @@
     },
     java: {
       dirPadrao: 'C:\\pcsist\\produtos\\RotinasJava',
-      versoes: ['MAS', 'REL', 'DEV'],
-      base: { MAS: () => 'master', REL: (v) => 'release/' + v.rel, DEV: () => 'develop' },
+      versoes: ['SUP', 'MAS', 'REL', 'DEV'],
+      base: { SUP: (v) => 'support/' + v.sup, MAS: () => 'master', REL: (v) => 'release/' + v.rel, DEV: () => 'develop' },
     },
     apps: {
       dirPadrao: 'C:\\pcsist\\produtos\\RotinasJava',
@@ -31,7 +31,7 @@
       base: { MAS: () => 'master', REL: (v) => 'release/' + v.rel, DEV: () => 'develop' },
     },
   };
-  const PADRAO_VERSOES = { delphi: { sup: '37.0', rel: '39.0' }, java: { rel: '39.0' }, apps: { rel: '39.0' }, admdb: {} };
+  const PADRAO_VERSOES = { delphi: { sup: '37.0', rel: '39.0' }, java: { sup: '38.0', rel: '39.0' }, apps: { rel: '39.0' }, admdb: {} };
 
   // "37" / "37.0" / "37,0" -> "37.0"; inválido -> null
   function normVersao(s) {
@@ -222,7 +222,7 @@
   }
   function renderCamposVersao() {
     const t = tipoAtual(), m = marcadas();
-    const pedeSup = t === 'delphi' && m.includes('SUP');
+    const pedeSup = (t === 'delphi' || t === 'java') && m.includes('SUP');
     const pedeRel = t !== 'admdb' && m.includes('REL');
     $('boxSup').hidden = !pedeSup;
     $('boxRel').hidden = !pedeRel;
